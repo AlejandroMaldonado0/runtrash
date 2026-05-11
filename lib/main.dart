@@ -72,12 +72,14 @@ class SplashScreen extends StatelessWidget {
 }
 
 // -------------------- LOGIN --------------------
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
+
 class _LoginScreenState extends State<LoginScreen> {
   String tipo = "Ciudadano";
 
@@ -87,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController nitController = TextEditingController();
   final TextEditingController codigoController = TextEditingController();
 
-  // 2. CIERRE DE CONTROLADORES (Para evitar que la app se ponga lenta)
+  // 2. LIMPIEZA DE CONTROLADORES
   @override
   void dispose() {
     emailController.dispose();
@@ -117,12 +119,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // 3. FUNCIÓN CAMPO ACTUALIZADA (Ahora recibe un controller)
+  // Widget de campo de texto actualizado para usar controladores
   Widget campo(String hint, TextEditingController controller, {bool oculto = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
-        controller: controller, // <--- Vinculación importante
+        controller: controller,
         obscureText: oculto,
         decoration: InputDecoration(
           hintText: hint,
@@ -143,6 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color(0xFFCBB89D),
       body: Stack(
         children: [
+          // FONDO
           Positioned.fill(
             child: Image.asset(
               'assets/fondo.png',
@@ -151,15 +154,19 @@ class _LoginScreenState extends State<LoginScreen> {
               opacity: const AlwaysStoppedAnimation(0.35),
             ),
           ),
+
+          // CONTENIDO
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(20),
-              child: SingleChildScrollView( // Agregado para que no de error de espacio al abrir teclado
+              child: SingleChildScrollView( // Evita error de espacio con el teclado
                 child: Column(
                   children: [
                     const SizedBox(height: 10),
                     Image.asset('assets/logo2.png', width: 200),
                     const SizedBox(height: 30),
+
+                    // SELECTOR DE TIPO
                     Row(
                       children: [
                         botonTipo("Ciudadano"),
@@ -167,9 +174,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         botonTipo("Empresa"),
                       ],
                     ),
+
                     const SizedBox(height: 30),
 
-                    // USANDO LOS CONTROLADORES EN LOS CAMPOS
+                    // CAMPOS DE TEXTO
                     campo("email", emailController),
                     campo("contraseña", passController, oculto: true),
 
@@ -177,26 +185,36 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (tipo == "Operario") campo("código empresa", codigoController),
 
                     const SizedBox(height: 20),
+
+                    // BOTÓN LOGIN
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(40),
+                          ),
                         ),
                         onPressed: () async {
                           try {
-                            // Ahora emailController.text ya tiene valor
+                            // 🔹 LOGIN FIREBASE
                             UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
                               email: emailController.text.trim(),
                               password: passController.text.trim(),
                             );
 
+                            // 🔹 OBTENER UID Y DATOS
                             String uid = userCredential.user!.uid;
-                            DocumentSnapshot userData = await FirebaseFirestore.instance.collection("usuarios").doc(uid).get();
+                            DocumentSnapshot userData = await FirebaseFirestore.instance
+                                .collection("usuarios")
+                                .doc(uid)
+                                .get();
+
                             String tipoUsuario = userData['tipo'];
 
+                            // 🔹 REDIRECCIÓN SEGÚN TIPO
                             if (tipoUsuario == "Ciudadano") {
                               Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const CiudadanoScreen()));
                             } else if (tipoUsuario == "Operario") {
@@ -206,20 +224,62 @@ class _LoginScreenState extends State<LoginScreen> {
                             }
 
                           } on FirebaseAuthException catch (e) {
+                            // 🔹 MANEJO DE ERRORES DETALLADO
                             String mensaje = "Error en el login";
-                            if (e.code == 'user-not-found') mensaje = "Usuario no registrado";
-                            else if (e.code == 'wrong-password') mensaje = "Contraseña incorrecta";
 
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+                            if (e.code == 'user-not-found') {
+                              mensaje = "Usuario no registrado";
+                            } else if (e.code == 'wrong-password') {
+                              mensaje = "Contraseña incorrecta";
+                            } else if (e.code == 'invalid-email') {
+                              mensaje = "Correo con formato inválido";
+                            } else if (e.code == 'invalid-credential') {
+                              mensaje = "Correo o contraseña incorrectos";
+                            }
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(mensaje), backgroundColor: Colors.redAccent),
+                            );
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error inesperado")));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Ocurrió un error inesperado")),
+                            );
                           }
                         },
-                        child: const Text("Log In"),
+                        child: const Text("Log In", style: TextStyle(color: Colors.white, fontSize: 18)),
                       ),
                     ),
+
                     const SizedBox(height: 20),
-                    // ... el resto de tu código (Google, Facebook, Registrarse) se mantiene igual
+
+                    // LÍNEA DIVISORA "OR"
+                    Row(
+                      children: const [
+                        Expanded(child: Divider(color: Colors.white)),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text("Or", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                        ),
+                        Expanded(child: Divider(color: Colors.white)),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // BOTONES SOCIALES
+                    socialBtn("Continue with Google"),
+                    const SizedBox(height: 10),
+                    socialBtn("Continue with Facebook"),
+
+                    const SizedBox(height: 40),
+
+                    GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                      child: const Text(
+                        "No tiene cuenta? registrarse",
+                        style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -227,6 +287,19 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // Widget auxiliar para botones sociales
+  Widget socialBtn(String texto) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: Center(child: Text(texto, style: const TextStyle(fontWeight: FontWeight.bold))),
     );
   }
 }
