@@ -191,24 +191,84 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(40),
                         ),
                       ),
-                      onPressed: () {
-                        if (tipo == "Ciudadano") {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const CiudadanoScreen()),
+                      onPressed: () async {
+
+                        try {
+
+                          // 🔹 LOGIN FIREBASE
+
+                          UserCredential userCredential =
+                          await FirebaseAuth.instance.signInWithEmailAndPassword(
+
+                            email: emailController.text.trim(),
+
+                            password: passController.text.trim(),
                           );
-                        } else if (tipo == "Operario") {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const OperarioScreen()),
-                          );
-                        } else {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const EmpresaScreen()),
+
+                          // 🔹 OBTENER UID
+
+                          String uid = userCredential.user!.uid;
+
+                          // 🔹 BUSCAR DATOS EN FIRESTORE
+
+                          DocumentSnapshot userData =
+                          await FirebaseFirestore.instance
+                              .collection("usuarios")
+                              .doc(uid)
+                              .get();
+
+                          // 🔹 OBTENER TIPO
+
+                          String tipoUsuario = userData['tipo'];
+
+                          // 🔹 REDIRECCIÓN
+
+                          if (tipoUsuario == "Ciudadano") {
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CiudadanoScreen(),
+                              ),
+                            );
+
+                          } else if (tipoUsuario == "Operario") {
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const OperarioScreen(),
+                              ),
+                            );
+
+                          } else {
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const EmpresaScreen(),
+                              ),
+                            );
+                          }
+
+                        } on FirebaseAuthException catch (e) {
+
+                          String mensaje = "Error";
+
+                          if (e.code == 'user-not-found') {
+                            mensaje = "Usuario no encontrado";
+                          }
+
+                          else if (e.code == 'wrong-password') {
+                            mensaje = "Contraseña incorrecta";
+                          }
+
+                          else if (e.code == 'invalid-email') {
+                            mensaje = "Correo inválido";
+                          }
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(mensaje)),
                           );
                         }
                       },
