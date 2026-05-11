@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "919018263407",
+    "project_id": "runtrash-d2c59",
+    "storage_bucket": "runtrash-d2c59.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919018263407:android:b387db09efb4b84d660e9a",
+        "android_client_info": {
+          "package_name": "com.example.aplicacion"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFKZP_IBE7q5CR30j-84NsJgHdyP0XC-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
