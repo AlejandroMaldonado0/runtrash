@@ -1,0 +1,473 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class NuevoReporteScreen extends StatefulWidget {
+  const NuevoReporteScreen({super.key});
+
+  @override
+  State<NuevoReporteScreen> createState() => _NuevoReporteScreenState();
+}
+
+class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
+
+  String tipoProblema = "";
+
+  final descripcionController = TextEditingController();
+
+  Widget botonTipo(String texto) {
+
+    bool activo = tipoProblema == texto;
+
+    return GestureDetector(
+
+      onTap: () {
+
+        setState(() {
+          tipoProblema = texto;
+        });
+      },
+
+      child: Container(
+
+        width: 120,
+        height: 45,
+
+        decoration: BoxDecoration(
+
+          color: activo
+              ? const Color(0xFF6AA84F)
+              : Colors.grey.shade400,
+
+          borderRadius: BorderRadius.circular(10),
+        ),
+
+        child: Center(
+
+          child: Text(
+
+            texto,
+
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+
+      backgroundColor: const Color(0xFFF3E9D7),
+
+      body: SafeArea(
+
+        child: SingleChildScrollView(
+
+          child: Padding(
+
+            padding: const EdgeInsets.all(20),
+
+            child: Column(
+
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+
+                // ---------------- HEADER ----------------
+
+                Row(
+
+                  children: [
+
+                    IconButton(
+
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        size: 35,
+                        color: Colors.black54,
+                      ),
+                    ),
+
+                    Expanded(
+
+                      child: Column(
+
+                        children: [
+
+                          Image.asset(
+                            'assets/logo2.png',
+                            width: 120,
+                          ),
+
+                          const SizedBox(height: 5),
+
+                          const Text(
+
+                            "Nuevo reporte",
+
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const CircleAvatar(
+
+                      radius: 25,
+
+                      backgroundImage:
+                      AssetImage('assets/perfil.png'),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 25),
+
+                // ---------------- FOTO ----------------
+
+                Container(
+
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(15),
+
+                  decoration: BoxDecoration(
+
+                    color: Colors.grey.shade300,
+
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+
+                  child: Column(
+
+                    children: [
+
+                      Image.asset(
+                        'assets/camara.png',
+                        width: 90,
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      Row(
+
+                        mainAxisAlignment:
+                        MainAxisAlignment.spaceEvenly,
+
+                        children: [
+
+                          ElevatedButton(
+
+                            style: ElevatedButton.styleFrom(
+
+                              backgroundColor:
+                              const Color(0xFF556B2F),
+
+                              shape: RoundedRectangleBorder(
+
+                                borderRadius:
+                                BorderRadius.circular(15),
+                              ),
+                            ),
+
+                            onPressed: () {},
+
+                            child: const Text(
+
+                              "tomar foto",
+
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+
+                          ElevatedButton(
+
+                            style: ElevatedButton.styleFrom(
+
+                              backgroundColor:
+                              const Color(0xFFB7AA8B),
+
+                              shape: RoundedRectangleBorder(
+
+                                borderRadius:
+                                BorderRadius.circular(15),
+                              ),
+                            ),
+
+                            onPressed: () {},
+
+                            child: const Text(
+
+                              "Subir imagen",
+
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                // ---------------- UBICACIÓN ----------------
+
+                const Row(
+
+                  children: [
+
+                    Icon(
+                      Icons.location_on,
+                      color: Colors.red,
+                    ),
+
+                    SizedBox(width: 10),
+
+                    Text(
+
+                      "Ubicacion precisa",
+
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 15),
+
+                Container(
+
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(15),
+
+                  decoration: BoxDecoration(
+
+                    color: Colors.grey.shade300,
+
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+
+                  child: const Row(
+
+                    children: [
+
+                      Icon(
+                        Icons.location_pin,
+                        color: Colors.red,
+                      ),
+
+                      SizedBox(width: 10),
+
+                      Text(
+                        "Calle 141a #111a , Bogotá",
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                // ---------------- DESCRIPCIÓN ----------------
+
+                const Text(
+
+                  "describe el problema",
+
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                TextField(
+
+                  controller: descripcionController,
+
+                  maxLength: 100,
+                  maxLines: 4,
+
+                  decoration: InputDecoration(
+
+                    hintText: "da una breve descripcion.......",
+
+                    filled: true,
+
+                    fillColor: Colors.grey.shade300,
+
+                    border: OutlineInputBorder(
+
+                      borderRadius:
+                      BorderRadius.circular(15),
+
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                // ---------------- TIPO PROBLEMA ----------------
+
+                const Text(
+
+                  "Tipo de Problema",
+
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                Row(
+
+                  mainAxisAlignment:
+                  MainAxisAlignment.spaceEvenly,
+
+                  children: [
+
+                    botonTipo("Basura"),
+
+                    botonTipo("Escombro"),
+                  ],
+                ),
+
+                const SizedBox(height: 35),
+
+                // ---------------- BOTÓN ENVIAR ----------------
+
+                SizedBox(
+
+                  width: double.infinity,
+                  height: 60,
+
+                  child: ElevatedButton(
+
+                    style: ElevatedButton.styleFrom(
+
+                      backgroundColor:
+                      const Color(0xFF6AA84F),
+
+                      shape: RoundedRectangleBorder(
+
+                        borderRadius:
+                        BorderRadius.circular(20),
+                      ),
+                    ),
+
+                    onPressed: () async {
+
+                      if (descripcionController.text.isEmpty ||
+                          tipoProblema.isEmpty) {
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+
+                          const SnackBar(
+                            content: Text(
+                              "Completa todos los campos",
+                            ),
+                          ),
+                        );
+
+                        return;
+                      }
+
+                      try {
+
+                        await FirebaseFirestore.instance
+                            .collection("reportes")
+                            .add({
+
+                          "direccion":
+                          "Calle 141a #111a , Bogotá",
+
+                          "descripcion":
+                          descripcionController.text.trim(),
+
+                          "tipoProblema": tipoProblema,
+
+                          "estado": "Pendiente",
+
+                          "fecha": Timestamp.now(),
+                        });
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+
+                          const SnackBar(
+                            content: Text(
+                              "Reporte enviado correctamente",
+                            ),
+                          ),
+                        );
+
+                        Navigator.pop(context);
+
+                      } catch (e) {
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+
+                          SnackBar(
+                            content: Text("Error: $e"),
+                          ),
+                        );
+                      }
+                    },
+
+                    child: const Row(
+
+                      mainAxisAlignment:
+                      MainAxisAlignment.center,
+
+                      children: [
+
+                        Text(
+
+                          "Enviar Reporte",
+
+                          style: TextStyle(
+                            fontSize: 28,
+                            color: Colors.black,
+                          ),
+                        ),
+
+                        SizedBox(width: 20),
+
+                        Icon(
+                          Icons.recycling,
+                          color: Colors.black,
+                          size: 35,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

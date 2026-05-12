@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
+import 'nuevo_reporte_screen.dart';
 
 class CiudadanoScreen extends StatelessWidget {
   const CiudadanoScreen({super.key});
@@ -64,32 +65,57 @@ class CiudadanoScreen extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // 🔹 BOTÓN PRINCIPAL
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2E7D61),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "Reportar Basura ♻️",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  GestureDetector(
+
+                    onTap: () {
+
+                      Navigator.push(
+
+                        context,
+
+                        MaterialPageRoute(
+                          builder: (_) => const NuevoReporteScreen(),
+                        ),
+                      );
+                    },
+
+                    child: Container(
+
+                      width: double.infinity,
+
+                      padding: const EdgeInsets.all(15),
+
+                      decoration: BoxDecoration(
+
+                        color: const Color(0xFF2E7D61),
+
+                        borderRadius: BorderRadius.circular(20),
+
+                        boxShadow: [
+
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+
+                      child: const Center(
+
+                        child: Text(
+
+                          "Reportar Basura ♻️",
+
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 15),
 
                   // 🔹 CHIPS
