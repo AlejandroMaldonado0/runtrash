@@ -1,18 +1,71 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 
 class NuevoReporteScreen extends StatefulWidget {
   const NuevoReporteScreen({super.key});
 
   @override
-  State<NuevoReporteScreen> createState() => _NuevoReporteScreenState();
+  State<NuevoReporteScreen> createState() =>
+      _NuevoReporteScreenState();
 }
 
-class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
+class _NuevoReporteScreenState
+    extends State<NuevoReporteScreen> {
+
+  // ---------------- VARIABLES ----------------
 
   String tipoProblema = "";
 
-  final descripcionController = TextEditingController();
+  File? imagenSeleccionada;
+
+  final ImagePicker picker = ImagePicker();
+
+  final descripcionController =
+  TextEditingController();
+
+  final ubicacionController =
+  TextEditingController();
+
+  // ---------------- FOTO ----------------
+
+  Future<void> tomarFoto() async {
+
+    final XFile? foto = await picker.pickImage(
+      source: ImageSource.camera,
+    );
+
+    if (foto != null) {
+
+      setState(() {
+
+        imagenSeleccionada = File(foto.path);
+
+      });
+    }
+  }
+
+  // ---------------- GALERÍA ----------------
+
+  Future<void> subirImagen() async {
+
+    final XFile? imagen = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (imagen != null) {
+
+      setState(() {
+
+        imagenSeleccionada = File(imagen.path);
+
+      });
+    }
+  }
+
+  // ---------------- BOTÓN TIPO ----------------
 
   Widget botonTipo(String texto) {
 
@@ -23,7 +76,9 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
       onTap: () {
 
         setState(() {
+
           tipoProblema = texto;
+
         });
       },
 
@@ -48,6 +103,7 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
             texto,
 
             style: const TextStyle(
+
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -74,7 +130,8 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
             child: Column(
 
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
 
               children: [
 
@@ -87,12 +144,17 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                     IconButton(
 
                       onPressed: () {
+
                         Navigator.pop(context);
+
                       },
 
                       icon: const Icon(
+
                         Icons.arrow_back,
+
                         size: 35,
+
                         color: Colors.black54,
                       ),
                     ),
@@ -115,8 +177,11 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                             "Nuevo reporte",
 
                             style: TextStyle(
+
                               fontSize: 28,
-                              fontWeight: FontWeight.bold,
+
+                              fontWeight:
+                              FontWeight.bold,
                             ),
                           ),
                         ],
@@ -140,21 +205,45 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                 Container(
 
                   width: double.infinity,
-                  padding: const EdgeInsets.all(15),
+
+                  padding:
+                  const EdgeInsets.all(15),
 
                   decoration: BoxDecoration(
 
                     color: Colors.grey.shade300,
 
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius:
+                    BorderRadius.circular(10),
                   ),
 
                   child: Column(
 
                     children: [
 
-                      Image.asset(
+                      imagenSeleccionada != null
+
+                          ? ClipRRect(
+
+                        borderRadius:
+                        BorderRadius.circular(15),
+
+                        child: Image.file(
+
+                          imagenSeleccionada!,
+
+                          height: 180,
+
+                          width: double.infinity,
+
+                          fit: BoxFit.cover,
+                        ),
+                      )
+
+                          : Image.asset(
+
                         'assets/camara.png',
+
                         width: 90,
                       ),
 
@@ -169,23 +258,27 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
                           ElevatedButton(
 
-                            style: ElevatedButton.styleFrom(
+                            style:
+                            ElevatedButton.styleFrom(
 
                               backgroundColor:
                               const Color(0xFF556B2F),
 
-                              shape: RoundedRectangleBorder(
+                              shape:
+                              RoundedRectangleBorder(
 
                                 borderRadius:
-                                BorderRadius.circular(15),
+                                BorderRadius.circular(
+                                  15,
+                                ),
                               ),
                             ),
 
-                            onPressed: () {},
+                            onPressed: tomarFoto,
 
                             child: const Text(
 
-                              "tomar foto",
+                              "Tomar foto",
 
                               style: TextStyle(
                                 color: Colors.white,
@@ -195,19 +288,23 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
                           ElevatedButton(
 
-                            style: ElevatedButton.styleFrom(
+                            style:
+                            ElevatedButton.styleFrom(
 
                               backgroundColor:
                               const Color(0xFFB7AA8B),
 
-                              shape: RoundedRectangleBorder(
+                              shape:
+                              RoundedRectangleBorder(
 
                                 borderRadius:
-                                BorderRadius.circular(15),
+                                BorderRadius.circular(
+                                  15,
+                                ),
                               ),
                             ),
 
-                            onPressed: () {},
+                            onPressed: subirImagen,
 
                             child: const Text(
 
@@ -233,7 +330,9 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                   children: [
 
                     Icon(
+
                       Icons.location_on,
+
                       color: Colors.red,
                     ),
 
@@ -241,11 +340,14 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
                     Text(
 
-                      "Ubicacion precisa",
+                      "Ubicación precisa",
 
                       style: TextStyle(
+
                         fontSize: 22,
-                        fontWeight: FontWeight.bold,
+
+                        fontWeight:
+                        FontWeight.bold,
                       ),
                     ),
                   ],
@@ -253,33 +355,36 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
                 const SizedBox(height: 15),
 
-                Container(
+                TextField(
 
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(15),
+                  controller:
+                  ubicacionController,
 
-                  decoration: BoxDecoration(
+                  decoration: InputDecoration(
 
-                    color: Colors.grey.shade300,
+                    hintText:
+                    "Ingresa la ubicación",
 
-                    borderRadius: BorderRadius.circular(15),
-                  ),
+                    filled: true,
 
-                  child: const Row(
+                    fillColor:
+                    Colors.grey.shade300,
 
-                    children: [
+                    prefixIcon: const Icon(
 
-                      Icon(
-                        Icons.location_pin,
-                        color: Colors.red,
-                      ),
+                      Icons.location_on,
 
-                      SizedBox(width: 10),
+                      color: Colors.red,
+                    ),
 
-                      Text(
-                        "Calle 141a #111a , Bogotá",
-                      ),
-                    ],
+                    border: OutlineInputBorder(
+
+                      borderRadius:
+                      BorderRadius.circular(15),
+
+                      borderSide:
+                      BorderSide.none,
+                    ),
                   ),
                 ),
 
@@ -289,10 +394,12 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
                 const Text(
 
-                  "describe el problema",
+                  "Describe el problema",
 
                   style: TextStyle(
+
                     fontSize: 22,
+
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -301,25 +408,30 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
                 TextField(
 
-                  controller: descripcionController,
+                  controller:
+                  descripcionController,
 
                   maxLength: 100,
+
                   maxLines: 4,
 
                   decoration: InputDecoration(
 
-                    hintText: "da una breve descripcion.......",
+                    hintText:
+                    "Da una breve descripción...",
 
                     filled: true,
 
-                    fillColor: Colors.grey.shade300,
+                    fillColor:
+                    Colors.grey.shade300,
 
                     border: OutlineInputBorder(
 
                       borderRadius:
                       BorderRadius.circular(15),
 
-                      borderSide: BorderSide.none,
+                      borderSide:
+                      BorderSide.none,
                     ),
                   ),
                 ),
@@ -333,7 +445,9 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                   "Tipo de Problema",
 
                   style: TextStyle(
+
                     fontSize: 22,
+
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -360,16 +474,19 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                 SizedBox(
 
                   width: double.infinity,
+
                   height: 60,
 
                   child: ElevatedButton(
 
-                    style: ElevatedButton.styleFrom(
+                    style:
+                    ElevatedButton.styleFrom(
 
                       backgroundColor:
                       const Color(0xFF6AA84F),
 
-                      shape: RoundedRectangleBorder(
+                      shape:
+                      RoundedRectangleBorder(
 
                         borderRadius:
                         BorderRadius.circular(20),
@@ -378,12 +495,22 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
                     onPressed: () async {
 
-                      if (descripcionController.text.isEmpty ||
+                      if (descripcionController
+                          .text
+                          .isEmpty ||
+
+                          ubicacionController
+                              .text
+                              .isEmpty ||
+
                           tipoProblema.isEmpty) {
 
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(
 
                           const SnackBar(
+
                             content: Text(
                               "Completa todos los campos",
                             ),
@@ -395,26 +522,35 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
                       try {
 
-                        await FirebaseFirestore.instance
+                        await FirebaseFirestore
+                            .instance
                             .collection("reportes")
                             .add({
 
                           "direccion":
-                          "Calle 141a #111a , Bogotá",
+                          ubicacionController.text
+                              .trim(),
 
                           "descripcion":
-                          descripcionController.text.trim(),
+                          descripcionController.text
+                              .trim(),
 
-                          "tipoProblema": tipoProblema,
+                          "tipoProblema":
+                          tipoProblema,
 
-                          "estado": "Pendiente",
+                          "estado":
+                          "Pendiente",
 
-                          "fecha": Timestamp.now(),
+                          "fecha":
+                          Timestamp.now(),
                         });
 
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(
 
                           const SnackBar(
+
                             content: Text(
                               "Reporte enviado correctamente",
                             ),
@@ -425,10 +561,13 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
                       } catch (e) {
 
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(
 
                           SnackBar(
-                            content: Text("Error: $e"),
+                            content:
+                            Text("Error: $e"),
                           ),
                         );
                       }
@@ -446,16 +585,24 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                           "Enviar Reporte",
 
                           style: TextStyle(
-                            fontSize: 28,
+
+                            fontSize: 24,
+
                             color: Colors.black,
+
+                            fontWeight:
+                            FontWeight.bold,
                           ),
                         ),
 
-                        SizedBox(width: 20),
+                        SizedBox(width: 15),
 
                         Icon(
+
                           Icons.recycling,
+
                           color: Colors.black,
+
                           size: 35,
                         ),
                       ],
@@ -470,4 +617,3 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
     );
   }
 }
-
