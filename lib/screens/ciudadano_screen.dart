@@ -113,7 +113,7 @@ class _CiudadanoScreenState
                           icon: const CircleAvatar(
                             radius: 22,
                             backgroundColor:
-                            Colors.purpleAccent,
+                            Colors.lightGreen,
                           ),
 
                           onSelected:
@@ -291,7 +291,7 @@ class _CiudadanoScreenState
 
                 const SizedBox(height: 20),
 
-                /// 🔥 REPORTES DINÁMICOS
+                ///  REPORTES DINÁMICOS
                 StreamBuilder<QuerySnapshot>(
 
                   stream: obtenerReportes(),
@@ -350,11 +350,11 @@ class _CiudadanoScreenState
 
                           margin:
                           const EdgeInsets.only(
-                            bottom: 15,
+                            bottom: 10,
                           ),
 
                           padding:
-                          const EdgeInsets.all(15),
+                          const EdgeInsets.all(50),
 
                           decoration:
                           BoxDecoration(
@@ -422,7 +422,7 @@ class _CiudadanoScreenState
                               ),
 
                               const SizedBox(
-                                height: 5,
+                                height: 50,
                               ),
 
                               Text(descripcion),
