@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NuevoReporteScreen extends StatefulWidget {
   const NuevoReporteScreen({super.key});
@@ -21,6 +22,8 @@ class _NuevoReporteScreenState
 
   File? imagenSeleccionada;
 
+  bool cargando = false;
+
   final ImagePicker picker = ImagePicker();
 
   final descripcionController =
@@ -29,7 +32,7 @@ class _NuevoReporteScreenState
   final ubicacionController =
   TextEditingController();
 
-  // ---------------- FOTO ----------------
+  // ---------------- TOMAR FOTO ----------------
 
   Future<void> tomarFoto() async {
 
@@ -47,7 +50,7 @@ class _NuevoReporteScreenState
     }
   }
 
-  // ---------------- GALERÍA ----------------
+  // ---------------- SUBIR IMAGEN ----------------
 
   Future<void> subirImagen() async {
 
@@ -65,7 +68,7 @@ class _NuevoReporteScreenState
     }
   }
 
-  // ---------------- BOTÓN TIPO ----------------
+  // ---------------- BOTONES TIPO ----------------
 
   Widget botonTipo(String texto) {
 
@@ -93,7 +96,8 @@ class _NuevoReporteScreenState
               ? const Color(0xFF6AA84F)
               : Colors.grey.shade400,
 
-          borderRadius: BorderRadius.circular(10),
+          borderRadius:
+          BorderRadius.circular(10),
         ),
 
         child: Center(
@@ -105,7 +109,9 @@ class _NuevoReporteScreenState
             style: const TextStyle(
 
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+
+              fontWeight:
+              FontWeight.bold,
             ),
           ),
         ),
@@ -113,12 +119,102 @@ class _NuevoReporteScreenState
     );
   }
 
+  // ---------------- ENVIAR REPORTE ----------------
+
+  Future<void> enviarReporte() async {
+
+    if (descripcionController.text.isEmpty ||
+
+        ubicacionController.text.isEmpty ||
+
+        tipoProblema.isEmpty) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+
+          content: Text(
+            "Completa todos los campos",
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    try {
+
+      setState(() {
+
+        cargando = true;
+
+      });
+
+      // ---------------- FIRESTORE ----------------
+
+      await FirebaseFirestore.instance
+          .collection("reportes")
+          .add({
+
+        "ubicacion":
+        ubicacionController.text,
+
+        "descripcion":
+        descripcionController.text,
+
+        "tipo":
+        tipoProblema,
+
+        "estado":
+        "Pendiente",
+
+        "fecha":
+        Timestamp.now(),
+
+        "usuarioId":
+        FirebaseAuth.instance.currentUser!.uid,
+      });
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+
+          content: Text(
+            "Reporte enviado correctamente",
+          ),
+        ),
+      );
+
+      Navigator.pop(context);
+
+    } catch (e) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        SnackBar(
+          content: Text("Error: $e"),
+        ),
+      );
+
+    } finally {
+
+      setState(() {
+
+        cargando = false;
+
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
 
-      backgroundColor: const Color(0xFFF3E9D7),
+      backgroundColor:
+      const Color(0xFFF3E9D7),
 
       body: SafeArea(
 
@@ -126,7 +222,8 @@ class _NuevoReporteScreenState
 
           child: Padding(
 
-            padding: const EdgeInsets.all(20),
+            padding:
+            const EdgeInsets.all(20),
 
             child: Column(
 
@@ -145,8 +242,9 @@ class _NuevoReporteScreenState
 
                       onPressed: () {
 
-                        Navigator.pop(context);
-
+                        Navigator.pop(
+                          context,
+                        );
                       },
 
                       icon: const Icon(
@@ -166,11 +264,15 @@ class _NuevoReporteScreenState
                         children: [
 
                           Image.asset(
+
                             'assets/logo2.png',
+
                             width: 120,
                           ),
 
-                          const SizedBox(height: 5),
+                          const SizedBox(
+                            height: 5,
+                          ),
 
                           const Text(
 
@@ -193,7 +295,9 @@ class _NuevoReporteScreenState
                       radius: 25,
 
                       backgroundImage:
-                      AssetImage('assets/perfil.png'),
+                      AssetImage(
+                        'assets/perfil.png',
+                      ),
                     ),
                   ],
                 ),
@@ -211,22 +315,28 @@ class _NuevoReporteScreenState
 
                   decoration: BoxDecoration(
 
-                    color: Colors.grey.shade300,
+                    color:
+                    Colors.grey.shade300,
 
                     borderRadius:
-                    BorderRadius.circular(10),
+                    BorderRadius.circular(
+                      10,
+                    ),
                   ),
 
                   child: Column(
 
                     children: [
 
-                      imagenSeleccionada != null
+                      imagenSeleccionada !=
+                          null
 
                           ? ClipRRect(
 
                         borderRadius:
-                        BorderRadius.circular(15),
+                        BorderRadius.circular(
+                          15,
+                        ),
 
                         child: Image.file(
 
@@ -234,7 +344,8 @@ class _NuevoReporteScreenState
 
                           height: 180,
 
-                          width: double.infinity,
+                          width:
+                          double.infinity,
 
                           fit: BoxFit.cover,
                         ),
@@ -247,22 +358,28 @@ class _NuevoReporteScreenState
                         width: 90,
                       ),
 
-                      const SizedBox(height: 15),
+                      const SizedBox(
+                        height: 15,
+                      ),
 
                       Row(
 
                         mainAxisAlignment:
-                        MainAxisAlignment.spaceEvenly,
+                        MainAxisAlignment
+                            .spaceEvenly,
 
                         children: [
 
                           ElevatedButton(
 
                             style:
-                            ElevatedButton.styleFrom(
+                            ElevatedButton
+                                .styleFrom(
 
                               backgroundColor:
-                              const Color(0xFF556B2F),
+                              const Color(
+                                0xFF556B2F,
+                              ),
 
                               shape:
                               RoundedRectangleBorder(
@@ -274,14 +391,19 @@ class _NuevoReporteScreenState
                               ),
                             ),
 
-                            onPressed: tomarFoto,
+                            onPressed:
+                            tomarFoto,
 
-                            child: const Text(
+                            child:
+                            const Text(
 
                               "Tomar foto",
 
-                              style: TextStyle(
-                                color: Colors.white,
+                              style:
+                              TextStyle(
+                                color:
+                                Colors
+                                    .white,
                               ),
                             ),
                           ),
@@ -289,10 +411,13 @@ class _NuevoReporteScreenState
                           ElevatedButton(
 
                             style:
-                            ElevatedButton.styleFrom(
+                            ElevatedButton
+                                .styleFrom(
 
                               backgroundColor:
-                              const Color(0xFFB7AA8B),
+                              const Color(
+                                0xFFB7AA8B,
+                              ),
 
                               shape:
                               RoundedRectangleBorder(
@@ -304,14 +429,19 @@ class _NuevoReporteScreenState
                               ),
                             ),
 
-                            onPressed: subirImagen,
+                            onPressed:
+                            subirImagen,
 
-                            child: const Text(
+                            child:
+                            const Text(
 
                               "Subir imagen",
 
-                              style: TextStyle(
-                                color: Colors.white,
+                              style:
+                              TextStyle(
+                                color:
+                                Colors
+                                    .white,
                               ),
                             ),
                           ),
@@ -360,7 +490,8 @@ class _NuevoReporteScreenState
                   controller:
                   ubicacionController,
 
-                  decoration: InputDecoration(
+                  decoration:
+                  InputDecoration(
 
                     hintText:
                     "Ingresa la ubicación",
@@ -370,17 +501,21 @@ class _NuevoReporteScreenState
                     fillColor:
                     Colors.grey.shade300,
 
-                    prefixIcon: const Icon(
+                    prefixIcon:
+                    const Icon(
 
                       Icons.location_on,
 
                       color: Colors.red,
                     ),
 
-                    border: OutlineInputBorder(
+                    border:
+                    OutlineInputBorder(
 
                       borderRadius:
-                      BorderRadius.circular(15),
+                      BorderRadius.circular(
+                        15,
+                      ),
 
                       borderSide:
                       BorderSide.none,
@@ -400,7 +535,8 @@ class _NuevoReporteScreenState
 
                     fontSize: 22,
 
-                    fontWeight: FontWeight.bold,
+                    fontWeight:
+                    FontWeight.bold,
                   ),
                 ),
 
@@ -415,7 +551,8 @@ class _NuevoReporteScreenState
 
                   maxLines: 4,
 
-                  decoration: InputDecoration(
+                  decoration:
+                  InputDecoration(
 
                     hintText:
                     "Da una breve descripción...",
@@ -425,10 +562,13 @@ class _NuevoReporteScreenState
                     fillColor:
                     Colors.grey.shade300,
 
-                    border: OutlineInputBorder(
+                    border:
+                    OutlineInputBorder(
 
                       borderRadius:
-                      BorderRadius.circular(15),
+                      BorderRadius.circular(
+                        15,
+                      ),
 
                       borderSide:
                       BorderSide.none,
@@ -438,7 +578,7 @@ class _NuevoReporteScreenState
 
                 const SizedBox(height: 25),
 
-                // ---------------- TIPO PROBLEMA ----------------
+                // ---------------- TIPO ----------------
 
                 const Text(
 
@@ -448,7 +588,8 @@ class _NuevoReporteScreenState
 
                     fontSize: 22,
 
-                    fontWeight: FontWeight.bold,
+                    fontWeight:
+                    FontWeight.bold,
                   ),
                 ),
 
@@ -457,7 +598,8 @@ class _NuevoReporteScreenState
                 Row(
 
                   mainAxisAlignment:
-                  MainAxisAlignment.spaceEvenly,
+                  MainAxisAlignment
+                      .spaceEvenly,
 
                   children: [
 
@@ -483,100 +625,38 @@ class _NuevoReporteScreenState
                     ElevatedButton.styleFrom(
 
                       backgroundColor:
-                      const Color(0xFF6AA84F),
+                      const Color(
+                        0xFF6AA84F,
+                      ),
 
                       shape:
                       RoundedRectangleBorder(
 
                         borderRadius:
-                        BorderRadius.circular(20),
+                        BorderRadius.circular(
+                          20,
+                        ),
                       ),
                     ),
 
-                    onPressed: () async {
+                    onPressed:
+                    cargando
+                        ? null
+                        : enviarReporte,
 
-                      if (descripcionController
-                          .text
-                          .isEmpty ||
+                    child:
+                    cargando
 
-                          ubicacionController
-                              .text
-                              .isEmpty ||
+                        ? const CircularProgressIndicator(
+                      color:
+                      Colors.white,
+                    )
 
-                          tipoProblema.isEmpty) {
-
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(
-
-                          const SnackBar(
-
-                            content: Text(
-                              "Completa todos los campos",
-                            ),
-                          ),
-                        );
-
-                        return;
-                      }
-
-                      try {
-
-                        await FirebaseFirestore
-                            .instance
-                            .collection("reportes")
-                            .add({
-
-                          "direccion":
-                          ubicacionController.text
-                              .trim(),
-
-                          "descripcion":
-                          descripcionController.text
-                              .trim(),
-
-                          "tipoProblema":
-                          tipoProblema,
-
-                          "estado":
-                          "Pendiente",
-
-                          "fecha":
-                          Timestamp.now(),
-                        });
-
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(
-
-                          const SnackBar(
-
-                            content: Text(
-                              "Reporte enviado correctamente",
-                            ),
-                          ),
-                        );
-
-                        Navigator.pop(context);
-
-                      } catch (e) {
-
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(
-
-                          SnackBar(
-                            content:
-                            Text("Error: $e"),
-                          ),
-                        );
-                      }
-                    },
-
-                    child: const Row(
+                        : const Row(
 
                       mainAxisAlignment:
-                      MainAxisAlignment.center,
+                      MainAxisAlignment
+                          .center,
 
                       children: [
 
@@ -584,24 +664,31 @@ class _NuevoReporteScreenState
 
                           "Enviar Reporte",
 
-                          style: TextStyle(
+                          style:
+                          TextStyle(
 
-                            fontSize: 24,
+                            fontSize:
+                            24,
 
-                            color: Colors.black,
+                            color:
+                            Colors.black,
 
                             fontWeight:
-                            FontWeight.bold,
+                            FontWeight
+                                .bold,
                           ),
                         ),
 
-                        SizedBox(width: 15),
+                        SizedBox(
+                          width: 15,
+                        ),
 
                         Icon(
 
                           Icons.recycling,
 
-                          color: Colors.black,
+                          color:
+                          Colors.black,
 
                           size: 35,
                         ),

@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'screens/register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,12 +21,28 @@ class RuntrashApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+
       debugShowCheckedModeBanner: false,
+
       home: const SplashScreen(),
+
+      routes: {
+
+        "/login": (context) =>
+        const SplashScreen(),
+
+        "/ciudadano": (context) =>
+        const CiudadanoScreen(),
+
+        "/empresa": (context) =>
+        const EmpresaScreen(),
+
+        "/operario": (context) =>
+        const OperarioScreen(),
+      },
     );
   }
 }
-
 // -------------------- SPLASH --------------------
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});

@@ -1,252 +1,468 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'nuevo_reporte_screen.dart';
 
-class CiudadanoScreen extends StatelessWidget {
+class CiudadanoScreen extends StatefulWidget {
   const CiudadanoScreen({super.key});
 
   @override
+  State<CiudadanoScreen> createState() =>
+      _CiudadanoScreenState();
+}
+
+class _CiudadanoScreenState
+    extends State<CiudadanoScreen> {
+
+  Stream<QuerySnapshot> obtenerReportes() {
+    return FirebaseFirestore.instance
+        .collection("reportes")
+        .where(
+      "usuarioId",
+      isEqualTo:
+      FirebaseAuth.instance.currentUser!.uid,
+    )
+        .orderBy(
+      "fecha",
+      descending: true,
+    )
+        .limit(3)
+        .snapshots();
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      backgroundColor: const Color(0xFFE6D3B3),
+
+      backgroundColor:
+      const Color(0xFFE8DFC9),
+
       body: SafeArea(
-        child: Stack(
-          children: [
 
-            // 🔹 FONDO (mapa suave)
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.2,
-                child: Image.asset(
-                  'assets/logo.png',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+        child: SingleChildScrollView(
 
-            // 🔹 CONTENIDO
-            Padding(
-              padding: const EdgeInsets.all(15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          child: Padding(
 
-                  // HEADER
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Image.asset('assets/logo2.png', width: 100),
-                      Row(
-                        children: [
-                          Stack(
-                            children: [
-                              const Icon(Icons.notifications, size: 30, color: Colors.orange),
-                              Positioned(
-                                right: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Text("1",
-                                      style: TextStyle(color: Colors.white, fontSize: 10)),
+            padding: const EdgeInsets.all(20),
+
+            child: Column(
+
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+
+              children: [
+
+                /// 🔹 PARTE SUPERIOR
+                Row(
+
+                  mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+
+                  children: [
+
+                    Image.asset(
+                      "assets/logo.png",
+                      width: 100,
+                    ),
+
+                    Row(
+                      children: [
+
+                        /// 🔔 NOTIFICACIONES
+                        Stack(
+                          children: [
+
+                            IconButton(
+                              onPressed: () {},
+                              icon: const Icon(
+                                Icons.notifications,
+                                color: Colors.orange,
+                                size: 32,
+                              ),
+                            ),
+
+                            Positioned(
+                              right: 0,
+                              child: Container(
+                                padding:
+                                const EdgeInsets.all(4),
+
+                                decoration:
+                                const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
                                 ),
-                              )
+
+                                child: const Text(
+                                  "1",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        /// 👤 PERFIL
+                        PopupMenuButton<String>(
+
+                          icon: const CircleAvatar(
+                            radius: 22,
+                            backgroundColor:
+                            Colors.purpleAccent,
+                          ),
+
+                          onSelected:
+                              (value) async {
+
+                            /// 🔹 CERRAR SESIÓN
+                            if (value == "logout") {
+
+                              await FirebaseAuth.instance
+                                  .signOut();
+
+                              Navigator.pushReplacementNamed(
+                                context,
+                                "/login",
+                              );
+                            }
+
+                            /// 🔹 CAMBIAR CONTRASEÑA
+                            if (value == "password") {
+
+                              await FirebaseAuth.instance
+                                  .sendPasswordResetEmail(
+                                email: FirebaseAuth
+                                    .instance
+                                    .currentUser!
+                                    .email!,
+                              );
+
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Correo enviado para cambiar contraseña",
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+
+                          itemBuilder: (context) => [
+
+                            const PopupMenuItem(
+                              value: "password",
+                              child: Text(
+                                "Cambiar contraseña",
+                              ),
+                            ),
+
+                            const PopupMenuItem(
+                              value: "logout",
+                              child: Text(
+                                "Cerrar sesión",
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 30),
+
+                /// 🔹 BOTÓN REPORTAR
+                GestureDetector(
+
+                  onTap: () {
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                        const NuevoReporteScreen(),
+                      ),
+                    );
+                  },
+
+                  child: Container(
+
+                    width: double.infinity,
+
+                    padding:
+                    const EdgeInsets.all(25),
+
+                    decoration: BoxDecoration(
+                      color:
+                      const Color(0xFF2E8B57),
+
+                      borderRadius:
+                      BorderRadius.circular(25),
+                    ),
+
+                    child: const Center(
+                      child: Text(
+                        "Reportar Basura ♻️",
+
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight:
+                          FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                /// 🔹 BOTONES
+                Row(
+
+                  mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+
+                  children: [
+
+                    botonSuperior("Ver Mapa"),
+
+                    botonSuperior("Mis Reportes"),
+
+                    botonSuperior("Historial"),
+                  ],
+                ),
+
+                const SizedBox(height: 30),
+
+                /// 🔹 MENSAJE
+                Container(
+
+                  width: double.infinity,
+
+                  padding:
+                  const EdgeInsets.all(18),
+
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius:
+                    BorderRadius.circular(20),
+                  ),
+
+                  child: const Row(
+                    children: [
+
+                      Icon(
+                        Icons.check_circle,
+                        color: Colors.white,
+                        size: 35,
+                      ),
+
+                      SizedBox(width: 10),
+
+                      Text(
+                        "Tu reporte fue atendido",
+
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                const Text(
+                  "Reportes recientes",
+
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                /// 🔥 REPORTES DINÁMICOS
+                StreamBuilder<QuerySnapshot>(
+
+                  stream: obtenerReportes(),
+
+                  builder: (context, snapshot) {
+
+                    if (!snapshot.hasData) {
+
+                      return const Center(
+                        child:
+                        CircularProgressIndicator(),
+                      );
+                    }
+
+                    final reportes =
+                        snapshot.data!.docs;
+
+                    if (reportes.isEmpty) {
+
+                      return const Text(
+                        "No tienes reportes aún",
+                      );
+                    }
+
+                    return Column(
+
+                      children: reportes.map((doc) {
+
+                        String estado =
+                        doc["estado"];
+
+                        String ubicacion =
+                        doc["ubicacion"];
+
+                        String descripcion =
+                        doc["descripcion"];
+
+                        Color colorEstado =
+                            Colors.red;
+
+                        if (estado ==
+                            "En proceso") {
+
+                          colorEstado =
+                              Colors.orange;
+                        }
+
+                        if (estado ==
+                            "Completado") {
+
+                          colorEstado =
+                              Colors.green;
+                        }
+
+                        return Container(
+
+                          margin:
+                          const EdgeInsets.only(
+                            bottom: 15,
+                          ),
+
+                          padding:
+                          const EdgeInsets.all(15),
+
+                          decoration:
+                          BoxDecoration(
+                            color:
+                            Colors.white
+                                .withOpacity(0.9),
+
+                            borderRadius:
+                            BorderRadius.circular(
+                              20,
+                            ),
+                          ),
+
+                          child: Column(
+
+                            crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+
+                            children: [
+
+                              Container(
+
+                                padding:
+                                const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+
+                                decoration:
+                                BoxDecoration(
+                                  color:
+                                  colorEstado,
+
+                                  borderRadius:
+                                  BorderRadius.circular(
+                                    20,
+                                  ),
+                                ),
+
+                                child: Text(
+                                  estado,
+
+                                  style:
+                                  const TextStyle(
+                                    color:
+                                    Colors.white,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(
+                                height: 10,
+                              ),
+
+                              Text(
+                                ubicacion,
+
+                                style:
+                                const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight:
+                                  FontWeight.bold,
+                                ),
+                              ),
+
+                              const SizedBox(
+                                height: 5,
+                              ),
+
+                              Text(descripcion),
                             ],
                           ),
-                          const SizedBox(width: 10),
-                          const CircleAvatar()
-                        ],
-                      )
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // 🔹 BOTÓN PRINCIPAL
-                  GestureDetector(
-
-                    onTap: () {
-
-                      Navigator.push(
-
-                        context,
-
-                        MaterialPageRoute(
-                          builder: (_) => const NuevoReporteScreen(),
-                        ),
-                      );
-                    },
-
-                    child: Container(
-
-                      width: double.infinity,
-
-                      padding: const EdgeInsets.all(15),
-
-                      decoration: BoxDecoration(
-
-                        color: const Color(0xFF2E7D61),
-
-                        borderRadius: BorderRadius.circular(20),
-
-                        boxShadow: [
-
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-
-                      child: const Center(
-
-                        child: Text(
-
-                          "Reportar Basura ♻️",
-
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-
-                  // 🔹 CHIPS
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      chip("Ver Mapa", false),
-                      chip("Mis Reportes", true),
-                      chip("Historial", false),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // 🔹 MENSAJE
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.white),
-                        SizedBox(width: 10),
-                        Text(
-                          "Tu reporte fue atendido",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    "Reportes recientes",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // 🔹 LISTA
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        reporte(
-                          "Pendiente",
-                          Colors.red,
-                          "Calle 141a #111a , Bogotá",
-                          "10/Abril",
-                        ),
-                        reporte(
-                          "En proceso",
-                          Colors.orange,
-                          "Carrera 51a #8b-14 , Bogotá",
-                          "09/Abril",
-                        ),
-                        reporte(
-                          "Completado",
-                          Colors.green,
-                          "Carrera 161a #52-12 , Bogotá",
-                          "04/Abril",
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  // 🔹 CHIP
-  Widget chip(String texto, bool activo) {
+  Widget botonSuperior(String texto) {
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: activo ? const Color(0xFF2E7D61) : Colors.grey.shade500,
-        borderRadius: BorderRadius.circular(20),
+
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 15,
       ),
+
+      decoration: BoxDecoration(
+        color: Colors.grey.shade400,
+        borderRadius:
+        BorderRadius.circular(20),
+      ),
+
       child: Text(
         texto,
-        style: const TextStyle(color: Colors.white),
-      ),
-    );
-  }
 
-  // 🔹 TARJETA REPORTE
-  Widget reporte(String estado, Color color, String direccion, String fecha) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  estado,
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
-              ),
-              const Spacer(),
-              Text(fecha, style: const TextStyle(fontSize: 12)),
-            ],
-          ),
-
-          const SizedBox(height: 5),
-
-          Text(direccion),
-          const SizedBox(height: 5),
-          const Text(
-            "acumulacion de basura parque publico",
-            style: TextStyle(fontSize: 12, color: Colors.black54),
-          ),
-        ],
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+        ),
       ),
     );
   }
