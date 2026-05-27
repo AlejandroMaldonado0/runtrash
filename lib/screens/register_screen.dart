@@ -3,43 +3,69 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterScreen extends StatefulWidget {
+
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() =>
+      _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState
+    extends State<RegisterScreen> {
 
-  // ---------------- CONTROLADORES ----------------
+  /// 🔥 CONTROLADORES
 
-  final nombreController = TextEditingController();
+  final nombreController =
+  TextEditingController();
 
-  final emailController = TextEditingController();
+  final emailController =
+  TextEditingController();
 
-  final passController = TextEditingController();
+  final passController =
+  TextEditingController();
 
-  final confirmController = TextEditingController();
+  final confirmController =
+  TextEditingController();
 
-  final codigoEmpresaController = TextEditingController();
+  final codigoEmpresaController =
+  TextEditingController();
 
-  final nitController = TextEditingController();
+  final nitController =
+  TextEditingController();
 
-  // ---------------- TIPO USUARIO ----------------
+  /// 🔥 TIPO USUARIO
 
-  String tipo = "Ciudadano";
+  String tipo = "ciudadano";
 
-  // ---------------- BOTONES ----------------
+  @override
+  void dispose() {
+    nombreController.dispose();
+
+    emailController.dispose();
+
+    passController.dispose();
+
+    confirmController.dispose();
+
+    codigoEmpresaController.dispose();
+
+    nitController.dispose();
+
+    super.dispose();
+  }
+
+  /// 🔥 BOTONES TIPO
 
   Widget botonTipo(String texto) {
-
-    bool activo = tipo == texto;
+    bool activo =
+        tipo == texto;
 
     return Expanded(
+
       child: GestureDetector(
 
         onTap: () {
-
           setState(() {
             tipo = texto;
           });
@@ -47,23 +73,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         child: Container(
 
-          margin: const EdgeInsets.symmetric(horizontal: 5),
+          margin:
+          const EdgeInsets.symmetric(
+            horizontal: 5,
+          ),
 
-          padding: const EdgeInsets.all(10),
+          padding:
+          const EdgeInsets.all(10),
 
-          decoration: BoxDecoration(
+          decoration:
+          BoxDecoration(
 
             color: activo
-                ? const Color(0xFF2E7D61)
-                : const Color(0xFF2E7D61).withOpacity(0.4),
+                ? const Color(
+              0xFF2E7D61,
+            )
+                : const Color(
+              0xFF2E7D61,
+            ).withOpacity(0.4),
 
-            borderRadius: BorderRadius.circular(20),
+            borderRadius:
+            BorderRadius.circular(
+              20,
+            ),
           ),
 
           child: Center(
+
             child: Text(
+
               texto,
-              style: const TextStyle(
+
+              style:
+              const TextStyle(
                 color: Colors.white,
               ),
             ),
@@ -73,54 +115,70 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ---------------- CAMPOS ----------------
+  /// 🔥 CAMPOS
 
-  Widget campo(
-      String hint,
-      TextEditingController controller, {
+  Widget campo(String hint,
+      TextEditingController controller,
+      {
         bool oculto = false,
       }) {
-
     return Padding(
 
-      padding: const EdgeInsets.only(bottom: 15),
+      padding:
+      const EdgeInsets.only(
+        bottom: 15,
+      ),
 
       child: TextField(
 
-        controller: controller,
+        controller:
+        controller,
 
-        obscureText: oculto,
+        obscureText:
+        oculto,
 
-        decoration: InputDecoration(
+        decoration:
+        InputDecoration(
 
           hintText: hint,
 
           filled: true,
 
-          fillColor: Colors.white,
+          fillColor:
+          Colors.white,
 
-          border: OutlineInputBorder(
+          border:
+          OutlineInputBorder(
 
-            borderRadius: BorderRadius.circular(30),
+            borderRadius:
+            BorderRadius.circular(
+              30,
+            ),
 
-            borderSide: BorderSide.none,
+            borderSide:
+            BorderSide.none,
           ),
         ),
       ),
     );
   }
 
-  // ---------------- REGISTRAR ----------------
+  /// 🔥 REGISTRAR
 
   Future<void> registrar() async {
 
-    // VALIDAR CONTRASEÑAS
+    /// 🔥 VALIDAR CONTRASEÑAS
 
-    if (passController.text != confirmController.text) {
+    if (passController.text !=
+        confirmController.text) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
 
-      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Las contraseñas no coinciden"),
+
+          content: Text(
+            "Las contraseñas no coinciden",
+          ),
         ),
       );
 
@@ -129,21 +187,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
 
-      // 🔹 CREAR USUARIO EN FIREBASE AUTH
+      /// 🔥 CREAR USUARIO
 
       UserCredential userCredential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
 
-        email: emailController.text.trim(),
+        email:
+        emailController.text.trim(),
 
-        password: passController.text.trim(),
+        password:
+        passController.text.trim(),
       );
 
-      // 🔹 UID
+      /// 🔥 UID
 
-      String uid = userCredential.user!.uid;
+      String uid =
+          userCredential.user!.uid;
 
-      // 🔹 GUARDAR EN FIRESTORE
+      /// 🔥 GUARDAR EN FIRESTORE
 
       await FirebaseFirestore.instance
           .collection("usuarios")
@@ -152,124 +214,176 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         "uid": uid,
 
-        "nombre": nombreController.text.trim(),
+        "nombre":
+        nombreController.text.trim(),
 
-        "email": emailController.text.trim(),
+        "email":
+        emailController.text.trim(),
 
-        "tipo": tipo,
+        /// 🔥 IMPORTANTE
+        "tipo":
+        tipo.toLowerCase(),
 
-        // 🔹 OPERARIO
-
+        /// 🔥 OPERARIO
         "codigo_empresa":
-        tipo == "Operario"
-            ? codigoEmpresaController.text.trim()
+
+        tipo == "operario"
+
+            ? codigoEmpresaController
+            .text
+            .trim()
+
             : "",
 
-        // 🔹 EMPRESA
-
+        /// 🔥 EMPRESA
         "nit_empresa":
-        tipo == "Empresa"
-            ? nitController.text.trim()
+
+        tipo == "empresa"
+
+            ? nitController
+            .text
+            .trim()
+
             : "",
       });
 
-      // 🔹 MENSAJE
+      /// 🔥 MENSAJE
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
         const SnackBar(
-          content: Text("Usuario registrado correctamente"),
+
+          content: Text(
+            "Usuario registrado correctamente",
+          ),
         ),
       );
 
-      // 🔹 VOLVER LOGIN
+      /// 🔥 VOLVER LOGIN
 
       Navigator.pop(context);
-
     } on FirebaseAuthException catch (e) {
+      String mensaje =
+          "Ocurrió un error";
 
-      String mensaje = "Ocurrió un error";
-
-      if (e.code == 'email-already-in-use') {
-        mensaje = "El correo ya está registrado";
+      if (e.code ==
+          'email-already-in-use') {
+        mensaje =
+        "El correo ya está registrado";
       }
 
-      else if (e.code == 'weak-password') {
-        mensaje = "La contraseña es muy débil";
+      else if (e.code ==
+          'weak-password') {
+        mensaje =
+        "La contraseña es muy débil";
       }
 
-      else if (e.code == 'invalid-email') {
-        mensaje = "Correo inválido";
+      else if (e.code ==
+          'invalid-email') {
+        mensaje =
+        "Correo inválido";
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(mensaje)),
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        SnackBar(
+          content: Text(mensaje),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
 
-      backgroundColor: const Color(0xFFCBB89D),
+      backgroundColor:
+      const Color(0xFFCBB89D),
 
       body: Stack(
 
         children: [
 
-          // 🔹 FONDO
+          /// 🔥 FONDO
 
           Positioned.fill(
+
             child: Image.asset(
+
               'assets/fondo.png',
+
               fit: BoxFit.cover,
-              alignment: Alignment.bottomCenter,
-              opacity: const AlwaysStoppedAnimation(0.35),
+
+              alignment:
+              Alignment.bottomCenter,
+
+              opacity:
+              const AlwaysStoppedAnimation(
+                0.35,
+              ),
             ),
           ),
 
-          // 🔹 CONTENIDO
+          /// 🔥 CONTENIDO
 
           SafeArea(
 
-            child: SingleChildScrollView(
+            child:
+            SingleChildScrollView(
 
               child: Padding(
 
-                padding: const EdgeInsets.all(20),
+                padding:
+                const EdgeInsets.all(20),
 
                 child: Column(
 
                   children: [
 
-                    const SizedBox(height: 10),
+                    const SizedBox(
+                      height: 10,
+                    ),
 
-                    // 🔹 LOGO
+                    /// 🔥 LOGO
 
                     Image.asset(
+
                       'assets/logo2.png',
+
                       width: 220,
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(
+                      height: 20,
+                    ),
 
-                    // 🔹 SELECTOR
+                    /// 🔥 SELECTOR
 
                     Row(
+
                       children: [
 
-                        botonTipo("Ciudadano"),
+                        botonTipo(
+                          "ciudadano",
+                        ),
 
-                        botonTipo("Operario"),
+                        botonTipo(
+                          "operario",
+                        ),
 
-                        botonTipo("Empresa"),
+                        botonTipo(
+                          "empresa",
+                        ),
                       ],
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(
+                      height: 30,
+                    ),
 
-                    // 🔹 CAMPOS
+                    /// 🔥 CAMPOS
 
                     campo(
                       "Nombre usuario",
@@ -293,50 +407,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       oculto: true,
                     ),
 
-                    // 🔹 SOLO OPERARIO
+                    /// 🔥 SOLO OPERARIO
 
-                    if (tipo == "Operario")
+                    if (tipo ==
+                        "operario")
 
                       campo(
                         "Código empresa",
                         codigoEmpresaController,
                       ),
 
-                    // 🔹 SOLO EMPRESA
+                    /// 🔥 SOLO EMPRESA
 
-                    if (tipo == "Empresa")
+                    if (tipo ==
+                        "empresa")
 
                       campo(
                         "NIT empresa",
                         nitController,
                       ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(
+                      height: 20,
+                    ),
 
-                    // 🔹 BOTÓN
+                    /// 🔥 BOTÓN
 
                     SizedBox(
 
-                      width: double.infinity,
+                      width:
+                      double.infinity,
 
                       height: 50,
 
-                      child: ElevatedButton(
+                      child:
+                      ElevatedButton(
 
-                        onPressed: registrar,
+                        onPressed:
+                        registrar,
 
-                        style: ElevatedButton.styleFrom(
+                        style:
+                        ElevatedButton.styleFrom(
 
-                          backgroundColor: Colors.orange,
+                          backgroundColor:
+                          Colors.orange,
 
-                          shape: RoundedRectangleBorder(
+                          shape:
+                          RoundedRectangleBorder(
 
-                            borderRadius: BorderRadius.circular(40),
+                            borderRadius:
+                            BorderRadius.circular(
+                              40,
+                            ),
                           ),
                         ),
 
                         child: const Text(
+
                           "Registrarme",
+
                           style: TextStyle(
                             fontSize: 16,
                           ),
@@ -344,15 +473,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(
+                      height: 20,
+                    ),
 
-                    // 🔹 VOLVER LOGIN
+                    /// 🔥 VOLVER LOGIN
 
                     GestureDetector(
 
                       onTap: () {
-
-                        Navigator.pop(context);
+                        Navigator.pop(
+                          context,
+                        );
                       },
 
                       child: const Text(
@@ -361,9 +493,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         style: TextStyle(
 
-                          color: Colors.white,
+                          color:
+                          Colors.white,
 
-                          decoration: TextDecoration.underline,
+                          decoration:
+                          TextDecoration
+                              .underline,
                         ),
                       ),
                     ),
