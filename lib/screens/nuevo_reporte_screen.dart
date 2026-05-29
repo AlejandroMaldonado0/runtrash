@@ -5,6 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+// 🔥 NUEVOS IMPORTS
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+
 class NuevoReporteScreen extends StatefulWidget {
   const NuevoReporteScreen({super.key});
 
@@ -31,6 +35,21 @@ class _NuevoReporteScreenState
 
   final ubicacionController =
   TextEditingController();
+
+  // 🔥 GPS
+  double latitud = 0;
+
+  double longitud = 0;
+
+  bool cargandoUbicacion = false;
+
+  @override
+  void initState() {
+
+    super.initState();
+
+    obtenerUbicacion();
+  }
 
   // ---------------- TOMAR FOTO ----------------
 
@@ -66,6 +85,85 @@ class _NuevoReporteScreenState
 
       });
     }
+  }
+
+  // ---------------- OBTENER UBICACIÓN ----------------
+
+  Future<void> obtenerUbicacion() async {
+
+    try {
+
+      setState(() {
+
+        cargandoUbicacion = true;
+      });
+
+      bool servicioHabilitado;
+
+      LocationPermission permiso;
+
+      servicioHabilitado =
+      await Geolocator
+          .isLocationServiceEnabled();
+
+      if (!servicioHabilitado) {
+
+        return;
+      }
+
+      permiso =
+      await Geolocator
+          .checkPermission();
+
+      if (permiso ==
+          LocationPermission.denied) {
+
+        permiso =
+        await Geolocator
+            .requestPermission();
+
+        if (permiso ==
+            LocationPermission.denied) {
+
+          return;
+        }
+      }
+
+      Position posicion =
+      await Geolocator
+          .getCurrentPosition(
+
+        desiredAccuracy:
+        LocationAccuracy.high,
+      );
+
+      latitud =
+          posicion.latitude;
+
+      longitud =
+          posicion.longitude;
+
+      List<Placemark> lugares =
+      await placemarkFromCoordinates(
+        latitud,
+        longitud,
+      );
+
+      Placemark lugar =
+          lugares.first;
+
+      ubicacionController.text =
+      "${lugar.street}, ${lugar.locality}";
+
+    } catch (e) {
+
+      print(e);
+    }
+
+    setState(() {
+
+      cargandoUbicacion = false;
+    });
   }
 
   // ---------------- BOTONES TIPO ----------------
@@ -174,7 +272,15 @@ class _NuevoReporteScreenState
 
         "usuarioId":
         FirebaseAuth.instance.currentUser!.uid,
+
+        // 🔥 GPS
+        "latitud":
+        latitud,
+
+        "longitud":
+        longitud,
       });
+
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
@@ -203,7 +309,6 @@ class _NuevoReporteScreenState
       setState(() {
 
         cargando = false;
-
       });
     }
   }
@@ -485,42 +590,85 @@ class _NuevoReporteScreenState
 
                 const SizedBox(height: 15),
 
-                TextField(
+                Column(
 
-                  controller:
-                  ubicacionController,
+                  children: [
 
-                  decoration:
-                  InputDecoration(
+                    TextField(
 
-                    hintText:
-                    "Ingresa la ubicación",
+                      controller:
+                      ubicacionController,
 
-                    filled: true,
+                      decoration:
+                      InputDecoration(
 
-                    fillColor:
-                    Colors.grey.shade300,
+                        hintText:
+                        "Ingresa la ubicación",
 
-                    prefixIcon:
-                    const Icon(
+                        filled: true,
 
-                      Icons.location_on,
+                        fillColor:
+                        Colors.grey.shade300,
 
-                      color: Colors.red,
-                    ),
+                        prefixIcon:
+                        const Icon(
 
-                    border:
-                    OutlineInputBorder(
+                          Icons.location_on,
 
-                      borderRadius:
-                      BorderRadius.circular(
-                        15,
+                          color: Colors.red,
+                        ),
+
+                        border:
+                        OutlineInputBorder(
+
+                          borderRadius:
+                          BorderRadius.circular(
+                            15,
+                          ),
+
+                          borderSide:
+                          BorderSide.none,
+                        ),
                       ),
-
-                      borderSide:
-                      BorderSide.none,
                     ),
-                  ),
+
+                    const SizedBox(height: 10),
+
+                    SizedBox(
+
+                      width: double.infinity,
+
+                      child:
+                      ElevatedButton.icon(
+
+                        style:
+                        ElevatedButton.styleFrom(
+
+                          backgroundColor:
+                          const Color(
+                            0xFF556B2F,
+                          ),
+                        ),
+
+                        onPressed:
+                        obtenerUbicacion,
+
+                        icon: const Icon(
+                          Icons.gps_fixed,
+                          color: Colors.white,
+                        ),
+
+                        label: const Text(
+
+                          "Actualizar GPS",
+
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 25),

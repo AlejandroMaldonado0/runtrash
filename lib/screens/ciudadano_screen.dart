@@ -177,19 +177,19 @@ class _CiudadanoScreenState
 
                 const SizedBox(height: 30),
 
-                /// 🔹 BOTÓN REPORTAR
-                GestureDetector(
+                  /// 🔹 BOTÓN REPORTAR
+                  GestureDetector(
 
-                  onTap: () {
+                    onTap: () {
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                        const NuevoReporteScreen(),
-                      ),
-                    );
-                  },
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                          const NuevoReporteScreen(),
+                        ),
+                      );
+                    },
 
                   child: Container(
 
