@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OperarioScreen extends StatelessWidget {
 
@@ -34,96 +35,187 @@ class OperarioScreen extends StatelessWidget {
     });
   }
 
-  /// 🔥 GENERAR RUTA
+  /// 🔥 GENERAR RUTA GOOGLE MAPS
   Future<void> generarRuta(
       BuildContext context,
       ) async {
 
-    QuerySnapshot query =
-    await FirebaseFirestore.instance
-        .collection("reportes")
-        .where(
-      "operarioId",
-      isEqualTo:
-      FirebaseAuth.instance.currentUser!.uid,
-    )
-        .where(
-      "estado",
-      isNotEqualTo:
-      "Completado",
-    )
-        .get();
+    try {
 
-    List reportes =
-        query.docs;
+      QuerySnapshot query =
+      await FirebaseFirestore.instance
+          .collection("reportes")
+          .where(
+        "operarioId",
+        isEqualTo:
+        FirebaseAuth.instance.currentUser!.uid,
+      )
+          .get();
 
-    if (reportes.isEmpty) {
+      List reportes =
+          query.docs;
+
+      /// 🔥 FILTRAR SOLO NO COMPLETADOS
+      reportes = reportes.where((reporte) {
+
+        final data =
+        reporte.data() as Map<String, dynamic>;
+
+        return data["estado"] != "Completado";
+
+      }).toList();
+
+      if (reportes.isEmpty) {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+
+          const SnackBar(
+
+            content: Text(
+              "No hay reportes para generar ruta",
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      /// 🔥 FILTRAR REPORTES CON COORDENADAS
+      reportes = reportes.where((reporte) {
+
+        final data =
+        reporte.data() as Map<String, dynamic>;
+
+        return data.containsKey("latitud") &&
+            data.containsKey("longitud") &&
+            data["latitud"] != null &&
+            data["longitud"] != null;
+
+      }).toList();
+
+      if (reportes.isEmpty) {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+
+          const SnackBar(
+
+            content: Text(
+              "Los reportes no tienen coordenadas",
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      /// 🔥 ORDENAR POR LATITUD
+      reportes.sort((a, b) {
+
+        double latA =
+        (a["latitud"] as num)
+            .toDouble();
+
+        double latB =
+        (b["latitud"] as num)
+            .toDouble();
+
+        return latA.compareTo(latB);
+      });
+
+      /// 🔥 SI SOLO HAY 1 PUNTO
+      if (reportes.length == 1) {
+
+        String destino =
+
+            "${reportes[0]["latitud"]},"
+            "${reportes[0]["longitud"]}";
+
+        final Uri uri = Uri.parse(
+
+          "google.navigation:q=$destino",
+        );
+
+        await launchUrl(
+          uri,
+          mode:
+          LaunchMode.externalApplication,
+        );
+
+        return;
+      }
+
+      /// 🔥 DESTINO FINAL
+      String destino =
+
+          "${reportes.last["latitud"]},"
+          "${reportes.last["longitud"]}";
+
+      /// 🔥 WAYPOINTS
+      List<String> puntos = [];
+
+      for (int i = 0;
+      i < reportes.length - 1;
+      i++) {
+
+        puntos.add(
+
+          "${reportes[i]["latitud"]},"
+              "${reportes[i]["longitud"]}",
+        );
+      }
+
+      String waypoints =
+      puntos.join("|");
+
+      /// 🔥 URL GOOGLE MAPS
+      String url =
+
+          "https://www.google.com/maps/dir/?api=1"
+          "&destination=$destino"
+          "&travelmode=driving"
+          "&waypoints=$waypoints";
+
+      final Uri uri =
+      Uri.parse(url);
+
+      bool abierto =
+      await launchUrl(
+
+        uri,
+
+        mode:
+        LaunchMode.externalApplication,
+      );
+
+      if (!abierto) {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+
+          const SnackBar(
+
+            content: Text(
+              "No se pudo abrir Google Maps",
+            ),
+          ),
+        );
+      }
+
+    } catch (e) {
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
-        const SnackBar(
+        SnackBar(
 
           content: Text(
-            "No hay reportes para generar ruta",
+            "Error: $e",
           ),
         ),
       );
-
-      return;
     }
-
-    /// 🔥 ORDENAR POR LATITUD
-    reportes.sort((a, b) {
-
-      double latA =
-      a["latitud"];
-
-      double latB =
-      b["latitud"];
-
-      return latA.compareTo(latB);
-    });
-
-    String ruta = "";
-
-    for (var reporte in reportes) {
-
-      ruta +=
-      "${reporte["ubicacion"]}\n";
-    }
-
-    showDialog(
-
-      context: context,
-
-      builder: (_) {
-
-        return AlertDialog(
-
-          title: const Text(
-            "Ruta Generada",
-          ),
-
-          content: Text(ruta),
-
-          actions: [
-
-            TextButton(
-
-              onPressed: () {
-
-                Navigator.pop(context);
-              },
-
-              child: const Text(
-                "Cerrar",
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
