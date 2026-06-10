@@ -42,6 +42,7 @@ class _NuevoReporteScreenState
   double longitud = 0;
 
   bool cargandoUbicacion = false;
+  bool usarGps = true;
 
   @override
   void initState() {
@@ -218,7 +219,6 @@ class _NuevoReporteScreenState
   }
 
   // ---------------- ENVIAR REPORTE ----------------
-
   Future<void> enviarReporte() async {
 
     if (descripcionController.text.isEmpty ||
@@ -246,10 +246,36 @@ class _NuevoReporteScreenState
       setState(() {
 
         cargando = true;
-
       });
 
-      // ---------------- FIRESTORE ----------------
+      double latitudFinal = latitud;
+      double longitudFinal = longitud;
+
+      if (!usarGps) {
+
+        try {
+
+          List<Location> ubicaciones =
+          await locationFromAddress(
+            ubicacionController.text,
+          );
+
+          if (ubicaciones.isNotEmpty) {
+
+            latitudFinal =
+                ubicaciones.first.latitude;
+
+            longitudFinal =
+                ubicaciones.first.longitude;
+          }
+
+        } catch (e) {
+
+          throw Exception(
+            "No se pudo encontrar esa dirección",
+          );
+        }
+      }
 
       await FirebaseFirestore.instance
           .collection("reportes")
@@ -273,12 +299,11 @@ class _NuevoReporteScreenState
         "usuarioId":
         FirebaseAuth.instance.currentUser!.uid,
 
-        // 🔥 GPS
         "latitud":
-        latitud,
+        latitudFinal,
 
         "longitud":
-        longitud,
+        longitudFinal,
       });
 
       ScaffoldMessenger.of(context)
@@ -581,8 +606,7 @@ class _NuevoReporteScreenState
 
                         fontSize: 22,
 
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -596,38 +620,33 @@ class _NuevoReporteScreenState
 
                     TextField(
 
-                      controller:
-                      ubicacionController,
+                      controller: ubicacionController,
 
-                      decoration:
-                      InputDecoration(
+                      onChanged: (value) {
 
-                        hintText:
-                        "Ingresa la ubicación",
+                        usarGps = false;
+                      },
+
+                      decoration: InputDecoration(
+
+                        hintText: "Ingresa la ubicación",
 
                         filled: true,
 
-                        fillColor:
-                        Colors.grey.shade300,
+                        fillColor: Colors.grey.shade300,
 
-                        prefixIcon:
-                        const Icon(
+                        prefixIcon: const Icon(
 
                           Icons.location_on,
 
                           color: Colors.red,
                         ),
 
-                        border:
-                        OutlineInputBorder(
+                        border: OutlineInputBorder(
 
-                          borderRadius:
-                          BorderRadius.circular(
-                            15,
-                          ),
+                          borderRadius: BorderRadius.circular(15),
 
-                          borderSide:
-                          BorderSide.none,
+                          borderSide: BorderSide.none,
                         ),
                       ),
                     ),
@@ -638,29 +657,95 @@ class _NuevoReporteScreenState
 
                       width: double.infinity,
 
-                      child:
-                      ElevatedButton.icon(
+                      child: ElevatedButton.icon(
 
-                        style:
-                        ElevatedButton.styleFrom(
+                        style: ElevatedButton.styleFrom(
 
-                          backgroundColor:
-                          const Color(
-                            0xFF556B2F,
-                          ),
+                          backgroundColor: const Color(0xFF556B2F),
                         ),
 
-                        onPressed:
-                        obtenerUbicacion,
+                        onPressed: () async {
+
+                          setState(() {
+
+                            usarGps = true;
+                          });
+
+                          await obtenerUbicacion();
+
+                          if (mounted) {
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+
+                              const SnackBar(
+
+                                content: Text(
+                                  "Ubicación GPS actualizada",
+                                ),
+                              ),
+                            );
+                          }
+                        },
 
                         icon: const Icon(
+
                           Icons.gps_fixed,
+
                           color: Colors.white,
                         ),
 
                         label: const Text(
 
-                          "Actualizar GPS",
+                          "Usar mi ubicación GPS",
+
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    SizedBox(
+
+                      width: double.infinity,
+
+                      child: ElevatedButton.icon(
+
+                        style: ElevatedButton.styleFrom(
+
+                          backgroundColor: Colors.orange,
+                        ),
+
+                        onPressed: () {
+
+                          setState(() {
+
+                            usarGps = false;
+                          });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+
+                            const SnackBar(
+
+                              content: Text(
+                                "Se usará la dirección escrita",
+                              ),
+                            ),
+                          );
+                        },
+
+                        icon: const Icon(
+
+                          Icons.edit_location_alt,
+
+                          color: Colors.white,
+                        ),
+
+                        label: const Text(
+
+                          "Usar dirección escrita",
 
                           style: TextStyle(
                             color: Colors.white,
@@ -673,7 +758,7 @@ class _NuevoReporteScreenState
 
                 const SizedBox(height: 25),
 
-                // ---------------- DESCRIPCIÓN ----------------
+// ---------------- DESCRIPCIÓN ----------------
 
                 const Text(
 
@@ -683,8 +768,7 @@ class _NuevoReporteScreenState
 
                     fontSize: 22,
 
-                    fontWeight:
-                    FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
 
@@ -692,41 +776,32 @@ class _NuevoReporteScreenState
 
                 TextField(
 
-                  controller:
-                  descripcionController,
+                  controller: descripcionController,
 
                   maxLength: 100,
 
                   maxLines: 4,
 
-                  decoration:
-                  InputDecoration(
+                  decoration: InputDecoration(
 
-                    hintText:
-                    "Da una breve descripción...",
+                    hintText: "Da una breve descripción...",
 
                     filled: true,
 
-                    fillColor:
-                    Colors.grey.shade300,
+                    fillColor: Colors.grey.shade300,
 
-                    border:
-                    OutlineInputBorder(
+                    border: OutlineInputBorder(
 
-                      borderRadius:
-                      BorderRadius.circular(
-                        15,
-                      ),
+                      borderRadius: BorderRadius.circular(15),
 
-                      borderSide:
-                      BorderSide.none,
+                      borderSide: BorderSide.none,
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 25),
 
-                // ---------------- TIPO ----------------
+// ---------------- TIPO ----------------
 
                 const Text(
 
